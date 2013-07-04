@@ -1,10 +1,12 @@
 BaseXML - for XML1.0
+====================
 
+<pre>
 VERSION          :  V1.0 BINARY SAFE FOR XML 1.0
 
 AUTHOR           :  KrisWebDev
 
-LINK             :  <<<<<GitHub release link>>>>>
+LINK             :  https://github.com/kriswebdev/BaseXML
                      KrisWebDev official version
 
 LICENSE          :  Open source under the MIT License.
@@ -60,7 +62,9 @@ ALGORITHM        :  BaseXML for XML1.0 and BaseXML for XML1.1
                     Note that BaseXML for XML1.0  makes use of the 
                      TAB control character (allowed in XML) and of
                      UTF-8 characters coded on 2 bytes.
-                     
+
+</pre>
+
 ----------------------------------------------------------------------
 LICENSE
 ----------------------------------------------------------------------
