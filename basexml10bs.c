@@ -2,7 +2,7 @@
 
 BaseXML - for XML1.0
 
-VERSION          :  V1.0 BINARY SAFE FOR XML 1.0
+VERSION          :  V1.0b BINARY SAFE FOR XML 1.0
 
 AUTHOR           :  KrisWebDev
 
@@ -501,7 +501,7 @@ static void decodeblock( unsigned char *in, unsigned char *out)
 **
 ** basexml encode a stream
 */
-static int encode( FILE *infile, FILE *outfile, int linesize )
+static int encode( FILE *infile, FILE *outfile )
 {
     unsigned char in[5]  = {0x00, 0x00, 0x00, 0x00, 0x00}; // 5 bytes
 	unsigned char out[9] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // map into 6 bytes once encoded (or 9 with a termination sequence)
@@ -627,7 +627,7 @@ static int decode( FILE *infile, FILE *outfile )
 ** 'engine' that opens streams and calls encode/decode
 */
 
-static int basexml( char opt, char *infilename, char *outfilename, int linesize )
+static int basexml( char opt, char *infilename, char *outfilename )
 {
     FILE *infile;
     int retcode = BASEXML_FILE_ERROR;
@@ -654,7 +654,7 @@ static int basexml( char opt, char *infilename, char *outfilename, int linesize 
         }
         else {
             if( opt == 'e' ) {
-                retcode = encode( infile, outfile, linesize );
+                retcode = encode( infile, outfile );
             }
             else {
                 retcode = decode( infile, outfile );
@@ -712,7 +712,6 @@ int main( int argc, char **argv )
 {
     char opt = (char) 0;
     int retcode = 0;
-    int linesize = BASEXML_DEF_LINE_SIZE;
     char *infilename = NULL, *outfilename = NULL;
 
     while( THIS_OPT( argc, argv ) != (char) 0 ) {
@@ -739,7 +738,7 @@ int main( int argc, char **argv )
         case 'd':
             infilename = argc > 1 ? argv[1] : NULL;
             outfilename = argc > 2 ? argv[2] : NULL;
-            retcode = basexml( opt, infilename, outfilename, linesize );
+            retcode = basexml( opt, infilename, outfilename );
             break;
         case 0:
 			if( argv[1] == NULL ) {
