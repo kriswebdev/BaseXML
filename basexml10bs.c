@@ -392,11 +392,11 @@ static void decodeblock( unsigned char *in, unsigned char *out)
 			input &= 0x00FFFFFF; input |= 0x26000000;
 		}
 		
-		switch(input & 0x00FF0000) == 0x00090000) {
+		if((input & 0x00FF0000) == 0x00090000) {
 			input &= 0xFF00FFFF; input |= 0x00260000;
 		}
 		
-		switch(input & 0x0000FF00) == 0x00000900) {
+		if((input & 0x0000FF00) == 0x00000900) {
 			input &= 0xFFFF00FF; input |= 0x00002600;
 		}
 		
