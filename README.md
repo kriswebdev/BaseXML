@@ -13,7 +13,7 @@ LICENSE          :  Open source under the MIT License.
                      See the LICENCE section below.
 
 USAGE            :  Compile and run as a command line to see the help.
-                     To compile: gcc -O3 basexml11.c -o basexml11.exe
+                     To compile: gcc -O3 basexml10bs.c -o basexml10bs.exe
                      Download MinGW to compile on Windows.
 
 DESCRIPTION      :  This software encodes and decodes binary data for
