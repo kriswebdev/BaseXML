@@ -6,7 +6,7 @@ VERSION          :  V1.0b BINARY SAFE FOR XML 1.0
 
 AUTHOR           :  KrisWebDev
 
-LINK             :  <<<<<GitHub release link>>>>>
+LINK             :  https://github.com/kriswebdev/BaseXML
                      KrisWebDev official version
 
 LICENSE          :  Open source under the MIT License.
