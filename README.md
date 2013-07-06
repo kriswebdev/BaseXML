@@ -29,7 +29,7 @@ Implementations
     <th>Implementation name</th><th>Usage</th><th>Supported input/output modes</th><th>Behind-the-scene Technology</th>
   </tr>
   <tr>
-    <td><b>BaseXML BS for XML1.0 for C</b></td><td>For C scripts<br>Or to get an executable.</td><td>FILES</td><td>C functions</td>
+    <td><b>BaseXML BS for XML1.0 for C</b></td><td>For C scripts or to get an executable</td><td>FILES</td><td>C functions</td>
   </tr>
   <tr>
     <td><b>BaseXML BS for XML1.0 for Python</b></td><td>For Python scripts</td><td>PYTHON STRINGS</td><td>Python module written in C</td>
@@ -45,11 +45,23 @@ Installation
     <th>Implementation name</th><th>Install steps</th><th>Usage steps</th>
   </tr>
   <tr>
-    <td><b>BaseXML BS for XML1.0 for C</b></td><td>Get the C file and compile it with GCC (<i>gcc -O3 basexml10.c -o basexml10.exe</i>) or Visual Studio.</td><td>basexml10&nbsp;-e&nbsp;&lt;FileIn&gt;&nbsp;[&lt;FileOut&gt;]<br>basexml10&nbsp;-d&nbsp;&lt;FileIn&gt;&nbsp;[&lt;FileOut&gt;]</td>
+    <td><b>BaseXML BS for XML1.0 for C</b></td>
+    <td>Get the C file. Compile it with GCC (<i>gcc -O3 basexml10.c -o basexml10.exe</i>) or Visual Studio if you want an executable.</td>
+    <td>
+    From the command line:<br>
+    basexml10&nbsp;-e&nbsp;&lt;FileIn&gt;&nbsp;[&lt;FileOut&gt;]<br>
+    basexml10&nbsp;-d&nbsp;&lt;FileIn&gt;&nbsp;[&lt;FileOut&gt;]<br>
+    Or from a C file:<br>
+    static&nbsp;int&nbsp;basexml(&nbsp;"e",&nbsp;char&nbsp;*infilename,&nbsp;char&nbsp;*outfilename&nbsp;);<br>
+    static&nbsp;int&nbsp;basexml(&nbsp;"d",&nbsp;char&nbsp;*infilename,&nbsp;char&nbsp;*outfilename&nbsp;);
+    </td>
   </tr>
   <tr>
-    <td><b>BaseXML BS for XML1.0 for Python</b></td><td>Get the full source folder and run <i>setup.py install</i> from a command line. You need Visual Studio (tested with 2008) or GCC.</td><td>
-    str&nbsp;=&nbsp;"hello world"<br>
+    <td><b>BaseXML BS for XML1.0 for Python</b></td>
+    <td>Get the full source folder and run <i>setup.py install</i> from a command line. You need Visual Studio (tested with 2008) or GCC.</td>
+    <td>
+    From a python *.py file:<br>str&nbsp;=&nbsp;"hello world"<br>
+    import basexml<br>
     enc&nbsp;=&nbsp;basexml.encode_string(str)<br>
     dec&nbsp;=&nbsp;basexml.decode_string(enc)</td>
   </tr>
@@ -58,4 +70,4 @@ Installation
 Author and Licence
 ------------------
 
-BaseXML algorithm and implementations have been developed by KrisWebDev. Implementations are under MIT or LGPL licenses depending on implementations (see source files).
+BaseXML algorithm and implementations have been developed by KrisWebDev. The applicable license is MIT license or LGPL license depending on implementations (see source files).
