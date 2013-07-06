@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: basexml
+Version: 1.0.B
+Summary: yEnc Module for Python
+Home-page: https://github.com/kriswebdev/BaseXML
+Author: KrisWebDev
+Author-email: N/A
+License: LGPL
+Description: Encodes/decodes binary data within XML documents
+Platform: XML file format

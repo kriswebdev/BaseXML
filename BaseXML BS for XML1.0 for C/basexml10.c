@@ -2,7 +2,7 @@
 
 BaseXML - for XML1.0
 
-VERSION          :  V1.0b BINARY SAFE FOR XML 1.0
+VERSION          :  V1.0c BINARY SAFE FOR XML 1.0
 
 AUTHOR           :  KrisWebDev
 
@@ -335,12 +335,16 @@ static void encodeblock( unsigned char *in, unsigned char *out, int len ) // enc
 	debug_print ("ENCODEBLOCK output bytes[0-6]: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n\n", out[0], out[1], out[2], out[3], out[4], out[5]);
 
 	// SHORT TERMINATION SEQUENCE
-	// we could reduce output size by coding into out[3-4] if len <= 2, but the decoding performance may be (very few) impacted since we only check every 6 bits
-	if(len != 0) { // add a terination sequence
-		if(len > 0 && len < 5) { // else... you've messed up the code.
+	// we  reduce output size by coding into out[3-4] if len <= 2
+	if(len != 5) { // add a termination sequence
+		if(len > 2 && len < 5) { // else... you've messed up the code.
 			out[6] = 0x3f;
 			out[7] = 0x30 | ((len) & 0x0f); // code the length of the last unencoded 5-bytes sequence inside the termination sequence
 			out[8] = 0x3f;
+		} else if(len > 0 && len < 5) {
+			out[3] = 0x3f;
+			out[4] = 0x30 | ((len) & 0x0f); // code the length of the last unencoded 5-bytes sequence inside the termination sequence
+			out[5] = 0x3f;
 		}
 	}
 	
@@ -533,14 +537,14 @@ static int encode( FILE *infile, FILE *outfile )
 			for( i = 0; i < 6; i++ ) { // Put the encoded bytes in the output stream.
                 putc( (int)(out[i]), outfile );
 			}
-			if( out[6] ) { // encodeblock() added a termination sequence
+			if( out[6] ) { // encodeblock() added a termination sequence with len=3 or len=4
 				putc( (int)(out[6]), outfile );
 				putc( (int)(out[7]), outfile );
 				putc( (int)(out[8]), outfile );
 				break;
 			}
 			
-        } else break; // that's a perfect end of file reached
+        } else break; // that's an end of file reached, len=5 or 1 or 2
     }
 	
 	if( ferror( outfile ) ) { // let's handle that out of the stream loop to improve performance. who cares we can't write?
@@ -591,9 +595,9 @@ static int decode( FILE *infile, FILE *outfile )
 		innext[0] = getc( infile );
 		innext[1] = getc( infile );
 		innext[2] = getc( infile );
-		if( (innext[0] == 0x3f) && (innext[2] == 0x3f) ) { // Termination sequence after
-			debug_print("Termination sequence now 0x%x 0x%x 0x%x",innext[0],innext[1],innext[2]);
+		if( ((innext[0] == 0x3f) && (innext[2] == 0x3f)) ) { // Termination sequence after
 			len = innext[1] & 0x07;
+			debug_print("Termination sequence now (long) (len=%i) 0x%x 0x%x 0x%x\n",len,innext[0],innext[1],innext[2]);
 			if(feof( infile ) || len < 1 || len > 4) { // Termination sequence after without correct length in it: illegal.
 				debug_print("in[] is %c %c %c %c %c %c %c\n",in[0],in[1],in[2],in[3],in[4],in[5]);
 				debug_print("len is %i (0x%x)\n",len,len);
@@ -601,6 +605,13 @@ static int decode( FILE *infile, FILE *outfile )
 				perror( basexml_message( BASEXML_ILLEGAL_TERMINATION ) );
 				retcode = BASEXML_ILLEGAL_TERMINATION;
 			}
+		} else if( ((in[3] == 0x3f) && (in[5] == 0x3f)) ) {
+			len = in[4] & 0x07;
+			debug_print("Termination sequence now (short) (len=%i) 0x%x 0x%x 0x%x\n",len,in[3],in[4],in[5]);
+			if(len > 5) {
+				perror( basexml_message( BASEXML_ILLEGAL_TERMINATION ) );
+				retcode = BASEXML_ILLEGAL_TERMINATION;
+				}
 		}
 		
 		decodeblock( in, out );
