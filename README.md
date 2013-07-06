@@ -4,7 +4,7 @@ BaseXML - for XML1.0+
 What does it do?
 ----------------
 
-BaseXML encodes and decodes BINARY DATA for use WITHIN AN XML 1.0+ document.
+BaseXML encodes and decodes BINARY DATA for use WITHIN AN XML 1.0 (or above) document.
 
 It has a constant overhead of **20%** (+/- 6 bytes), which is less than Base64. The encoded data is [Binary-Safe](http://en.wikipedia.org/wiki/Binary-safe#Binary-safe_file_read_and_write) (BS).
 
