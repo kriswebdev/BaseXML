@@ -15,10 +15,11 @@ BaseXML doesn't include a decoding checksum but you could easily use one if you 
 Requirements
 ------------
 
-Your XML 1.0 (or above) document must use the default UTF-8 content-type, i.e.:
-    <?xml version="1.0" encoding="UTF-8" ?>
+Your XML 1.0 (or above) document must use the default UTF-8 encoding, which is the default encoding, i.e.:
 
-Your XML parser must respect the XML 1.0 norm (support of the set of UTF-8 characters defined in the norm and not remove characters like tabs or spaces).
+        <?xml version="1.0" encoding="UTF-8" ?>
+
+Your XML parser must respect the XML 1.0 norm, i.e. it must support of the set of UTF-8 characters defined in the norm and not remove characters like tabs or spaces. Python SAX and EXPAT are compliant.
 
 
 Implementations
