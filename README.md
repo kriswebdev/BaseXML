@@ -60,8 +60,9 @@ Installation
     <td><b>BaseXML BS for XML1.0 for Python</b></td>
     <td>Get the full source folder and run <i>setup.py install</i> from a command line. You need Visual Studio (tested with 2008) or GCC.</td>
     <td>
-    From a python *.py file:<br>str&nbsp;=&nbsp;"hello world"<br>
+    From a python *.py file:<br>
     import basexml<br>
+    str&nbsp;=&nbsp;"hello world"<br>
     enc&nbsp;=&nbsp;basexml.encode_string(str)<br>
     dec&nbsp;=&nbsp;basexml.decode_string(enc)</td>
   </tr>
