@@ -29,7 +29,7 @@ Implementations
     <th>Implementation name</th><th>Usage</th><th>Supported input/output modes</th><th>Behind-the-scene Technology</th>
   </tr>
   <tr>
-    <td><b>BaseXML BS for XML1.0 for C</b></td><td>For C scripts</td><td>FILES</td><td>C functions</td>
+    <td><b>BaseXML BS for XML1.0 for C</b></td><td>For C scripts<br>Or to get an executable.</td><td>FILES</td><td>C functions</td>
   </tr>
   <tr>
     <td><b>BaseXML BS for XML1.0 for Python</b></td><td>For Python scripts</td><td>PYTHON STRINGS</td><td>Python module written in C</td>
