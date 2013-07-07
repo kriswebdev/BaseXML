@@ -578,12 +578,12 @@ unsigned char* encode_string(
 		unsigned long input_len
 		)
 {
-
+  printf("hello, world! ENCODE\n");
 
 	output_buffer = (unsigned char *) malloc( input_len*6/5 + 12); // Termination sequence. Should be +6 but not future-proof.
 	encodeblock(input_buffer, output_buffer, input_len, &output_len);
 	
-	return *output_buffer; // output_len ? maybe adapt output_buffer...
+	return output_buffer; // output_len ? maybe adapt output_buffer...
 	
 }
 
@@ -616,6 +616,7 @@ unsigned char* decode_string(
 
 unsigned char* test_string()
 {
+  printf("hello, world! TEST\n");
 
 	output_buffer = (Byte *)malloc( 10 );
     printf("in func test_string\n");
