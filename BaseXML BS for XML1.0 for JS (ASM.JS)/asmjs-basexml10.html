@@ -89,7 +89,7 @@
       Module.setStatus('Downloading...');
 	  </script>
     <script type='text/javascript' src='asmjs.js'></script>
-	<script type='text/javascript'>
+	<script type='text/javascript' >
 	
 /*  SPECIAL!  */
   
@@ -100,6 +100,9 @@ emcc -O1 -s EXPORTED_FUNCTIONS="['_main','_encode_string','_decode_string','_tes
 Can use -O2 (check -O3 too) and remove LINKABLE
 
 */
+
+
+function doStartNow() {
   
   // SOURCE CODE UNDER MIT LICENSE
   
@@ -138,6 +141,12 @@ Can use -O2 (check -O3 too) and remove LINKABLE
 	//ret_ptr = Module.ccall('test_string','pointer');
 	ret_len = Module.ccall('get_length','number');
 	
+	Module.print(['Return length',typeof ret_len, ret_len]);
+	Module.print(['Return pointer',typeof ret_ptr, ret_ptr]);
+	Module.print(['Return pointer[0-9]',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, 10)]);
+	Module.print(['Return pointer to string',typeof ret_ptr, Pointer_stringify(ret_ptr, ret_len) ]);
+    Module.print(['Return pointer to array',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, ret_len) ]);
+	
 	console.log('Return length',typeof ret_len, ret_len);
 	console.log('Return pointer',typeof ret_ptr, ret_ptr);
 	console.log('Return pointer[0-9]',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, 10));
@@ -147,6 +156,9 @@ Can use -O2 (check -O3 too) and remove LINKABLE
 	Module.print(["hi"]);
 	
 	Module._free(input_buf);
+}
+
+document.body.onload = doStartNow;
 	
 	</script>
   </body>

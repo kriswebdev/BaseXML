@@ -583,6 +583,8 @@ unsigned char* encode_string(
 	output_buffer = (unsigned char *) malloc( input_len*6/5 + 12); // Termination sequence. Should be +6 but not future-proof.
 	encodeblock(input_buffer, output_buffer, input_len, &output_len);
 	
+	printf("[C] output len: %lu\n",output_len);
+	
 	return output_buffer; // output_len ? maybe adapt output_buffer...
 	
 }
@@ -608,6 +610,7 @@ unsigned char* decode_string(
 	
 	output_buffer = (Byte *)malloc( input_len*5/6 + 5 );
 	decodeblock(input_buffer, output_buffer, input_len, &output_len);
+	
 	
 	return (unsigned char *)output_buffer; // output_len ? maybe adapt output_buffer...
 	
@@ -636,3 +639,5 @@ unsigned char* test_string()
 int get_length() {
 	return output_len;
 }
+
+
