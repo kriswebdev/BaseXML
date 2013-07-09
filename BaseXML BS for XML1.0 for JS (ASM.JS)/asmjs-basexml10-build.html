@@ -91,74 +91,44 @@
     <script type='text/javascript' src='asmjs.js'></script>
 	<script type='text/javascript' >
 	
-/*  SPECIAL!  */
-  
-  /* COMPILE WITH
-  
-emcc -O1 -s EXPORTED_FUNCTIONS="['_main','_encode_string','_decode_string','_test_string','_get_length']" asmjs-basexml10.c -o asmjs.js -s LINKABLE=1
-
-Can use -O2 (check -O3 too) and remove LINKABLE
-
+/*
+COMPILE WITH:
+emcc -O2 -s EXPORTED_FUNCTIONS="['_main','_encode_string','_decode_string','_get_length','_free']" -s ASM_JS=1 asmjs-basexml10.c --pre-js src-pre-js.js --post-js src-post-js.js -o asmjs.js
 */
-
-
+	
 function doStartNow() {
-  
-  // SOURCE CODE UNDER MIT LICENSE
-  
-  function Pointer_Uint8Arrayfy(ptr, length) {
-      return HEAPU8.subarray(ptr, ptr + length);
-  }
-  Module['Pointer_Uint8Arrayfy'] = Pointer_Uint8Arrayfy;
-
-   /* FOR DEMO PURPOSE */
-   
-	function str2ab(str) {
-	  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-	  var bufView = new Uint8Array(buf);
-	  for (var i=0, strLen=str.length; i<strLen; i++) {
-		bufView[i] = str.charCodeAt(i);
-	  }
-	  return buf;
-	}
-
-	var str = "hello world!"; // DON'T use UTF-8 chars because we want "binary array" for the demo
-	atest_input = str2ab(str);
 	
-  
-	/* ADD */
-  
+	var demo_str = "hello world!"; // Just for the demo. DON'T use UTF-8 chars because we want "binary array" for the demo
+	console.log('Converting "'+demo_str+'" to typed array for demo');
+	Module.print(['Converting "'+demo_str+'" to typed array for demo']);
 	
-	var input_buf = Module._malloc(atest_input.length);
-	Module.HEAPU8.set(atest_input, input_buf);
+	var demo_tarr = BaseXML.str2tarr(demo_str); // This is your input raw binary data.
+	console.log('demo_tarr',BaseXML.hex_dump_tarr(demo_tarr));
+	Module.print(['demo_tarr',BaseXML.hex_dump_tarr(demo_tarr)]);
 	
-	console.log('Allow input buffer start at pointer (input_buf): ',input_buf);
+	var encoded=BaseXML.encode( demo_tarr );
+	console.log('encoded',BaseXML.hex_dump_tarr(encoded));
+	Module.print(['encoded',BaseXML.hex_dump_tarr(encoded)]);
 	
-	ret_ptr = Module.ccall('encode_string', 'pointer', ['pointer','number'], [input_buf,input_buf.length]);
-
-  
-  
-	//ret_ptr = Module.ccall('test_string','pointer');
-	ret_len = Module.ccall('get_length','number');
+	var decoded=BaseXML.decode(  encoded  );
+	console.log('decoded',BaseXML.hex_dump_tarr(decoded));
+	Module.print(['decoded',BaseXML.hex_dump_tarr(decoded)]);
 	
-	Module.print(['Return length',typeof ret_len, ret_len]);
-	Module.print(['Return pointer',typeof ret_ptr, ret_ptr]);
-	Module.print(['Return pointer[0-9]',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, 10)]);
-	Module.print(['Return pointer to string',typeof ret_ptr, Pointer_stringify(ret_ptr, ret_len) ]);
-    Module.print(['Return pointer to array',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, ret_len) ]);
+	/* 
+	    If you are processing very LARGE amount of data (> half the size of the free RAM) - during a single call or the total of all calls - , you should:
+		- Divide your work in chunks of 5*N bytes for encode and 6*N bytes for decode.
+		- Free up the addressable memory after you're TOTALLY DONE with the input and/or ouput data, before making any new call to encode/decode.
+		BaseXML._free(BaseXML.input_ptr);
+		BaseXML._free(BaseXML.output_ptr);
+		  - Any further call to encode/decode will totally mess up the variable.
+		    That's because the encode/decode return variable is a typed array LINKED with the ASM.JS "RAM".
+		  - Any call to decode() or encode() with a variable that has been free in argument will produce an unexpected results (and you can expect it won't give you any good result).
+	*/
 	
-	console.log('Return length',typeof ret_len, ret_len);
-	console.log('Return pointer',typeof ret_ptr, ret_ptr);
-	console.log('Return pointer[0-9]',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, 10));
-	console.log('Return pointer to string',typeof ret_ptr, Pointer_stringify(ret_ptr, ret_len) );
-    console.log('Return pointer to array',typeof ret_ptr, Pointer_Uint8Arrayfy(ret_ptr, ret_len) );
-
-	Module.print(["hi"]);
-	
-	Module._free(input_buf);
 }
 
-document.body.onload = doStartNow;
+document.body.onload = doStartNow; // avoid print issues
+	
 	
 	</script>
   </body>

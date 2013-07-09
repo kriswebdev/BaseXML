@@ -209,7 +209,7 @@ uint32_t input = 0x00000000;
 uint32_t output = 0x00000000;
 
 /* Function definitions */
-void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, unsigned long *len_out )
+static void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, unsigned long *len_out )
 {
 
 	unsigned long i;
@@ -220,7 +220,7 @@ void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 	int len_rest;
 
 
-	
+	/* DEBUG: printf("Encoding len_in=%lu bytes, i_ceil=%lu\n", len_in, i_ceil); */
 
 
 	
@@ -228,9 +228,9 @@ void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 	
 	for( i = 0, i5 = 0, j = 0; i < i_ceil ; i++ ) {
 		
-		
+		/* DEBUG: printf("ENCODEBLOCK loop i=%lu (i_ceil=%lu)\n", i, i_ceil); */
 
-		
+		/* DEBUG: printf("ENCODEBLOCK 5 input bytes[0-4] for 2 loops: 0x%x 0x%x 0x%x 0x%x 0x%x\n", in[i5+0], in[i5+1], in[i5+2], in[i5+3], in[i5+4]); */
 		
 		if(i+1 == i_ceil) { // don't encode inexisting bytes
 			input = 0x00000000;
@@ -335,8 +335,8 @@ void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 		}
 			
 
-		
-		
+		/* DEBUG: printf("ENCODEBLOCK(%lu) input   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input)); */
+		/* DEBUG: printf("ENCODEBLOCK(%lu) out<>   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output)); */
 				
 		// XML ENTITY UNALLOWED CHARS
 		/*
@@ -353,14 +353,14 @@ void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 			output &= 0xFFFF00FF; output |= 0x00000900;
 		}
 		
-		
+		/* DEBUG: printf("ENCODEBLOCK(%lu) outXML  32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output)); */
 		
 
 		out[j] = (unsigned char) (output >> 24);
 		out[j+1] = (unsigned char) (output >> 16);
 		out[j+2] = (unsigned char) (output >> 8);	
 
-		
+		/* DEBUG: printf("ENCODEBLOCK output bytes[0-2]: 0x%x 0x%x 0x%x (j=%lu,+1,+1)\n\n", out[j], out[j+1], out[j+2], j); */
 		
 		j+=3;
 					
@@ -376,7 +376,7 @@ void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 		out[j] = 0x3f;
 		out[j+1] = 0x30 | ((len_rest) & 0x0f); // code the length of the last unencoded 5-bytes sequence inside the termination sequence
 		out[j+2] = 0x3f;
-		
+		/* DEBUG: printf("ENCODEBLOCK Termination sequence: 0x%x 0x%x 0x%x\n\n", out[j], out[j+1], out[j+2]); */
 		j+=3;
 	}
 	
@@ -393,7 +393,7 @@ void encodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 ** - undecodable bytes will (probably) be converted to 0x00
 ** - there is no unicity between encoded data and decoded data
 */
-void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, unsigned long *len_out)
+static void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, unsigned long *len_out)
 {   
 	
 	unsigned long i;
@@ -405,11 +405,11 @@ void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 	
 	*len_out = 0;
 
-	
+	/* DEBUG: printf("Decoding %lu bytes...\n",len_in); */
 	
 	for( i = 0, i3 = 0; i < i_ceil ; i++, i3 += 3 ) {
 
-		
+		/* DEBUG: printf("DECODEBLOCK loop i=%lu, i3=%lu (i_ceil=%lu)\n", i, i3, i_ceil); */
 				
 		input = 0;
 		if(i+1 == i_ceil || i+2 == i_ceil) {
@@ -417,35 +417,43 @@ void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 			 // Termination sequence
 			if( i3+2 < len_in ) {
 				if( (in[i3] == 0x3f) && (in[i3+2] == 0x3f) ) {
-					
+					/* DEBUG: printf("Termination sequence now 0x%x 0x%x 0x%x\n", in[i3], in[i3+1], in[i3+2]); */
 					len_last = in[i3+1] & 0x07;
 					if(len_last < 1 || len_last > 4) { // Termination sequence after without correct length in it: illegal.
-						
-						
+						/* DEBUG: printf("in[] is %c %c %c %c %c %c\n",in[i3],in[i3+1],in[i3+2],in[i3+3],in[i3+4],in[i3+5]); */
+						/* DEBUG: printf("len_last is %lu\n",len_last); */
 						perror( basexml_message( BASEXML_ILLEGAL_TERMINATION ) );
 					} else {
 						*len_out = j + len_last - (1-(i%2))*5;
-						
+						/* DEBUG: printf("\n\n*!! LEN_OUT = j (%lu) + len_last (%lu) - (1-(%lu))*5 = %lu\n",j,len_last,i%2,*len_out); */
 					}
 					break;
-				}
-			}
+				} /*else  DEBUG: printf("DECODEBLOCK(%lu) Not a termination sequence\n",i); */
+			} /*else  DEBUG */ printf("DECODEBLOCK(%lu) i3+2 < len_in",i);
 			
 			 // Full sequence
 			if(i3<len_in)   input |= in[i3]   << 24;
 			if(i3+1<len_in) input |= in[i3+1] << 16;
 			if(i3+1<len_in) input |= in[i3+2] <<  8;
 		} else {
+		//printf("DECODEBLOCK(%lu) DEBUG INPUT BEFORE     : %x\n", i, input);
+		//printf("DECODEBLOCK(%lu) DEBUG i3     : %lu\n", i, i3);
+		//printf("DECODEBLOCK(%lu) DEBUG in[i3] in[i3+1] in[i3+2]     : %x %x %x\n", i, in[i3], in[i3+1], in[i3+2]);
+		//printf("DECODEBLOCK(%lu) DEBUG NEXT WOULD BE in[i3+3] in[i3+4] in[i3+5]     : %x %x %x\n", i, in[i3+3], in[i3+4], in[i3+5]);
+		//printf("DECODEBLOCK(%lu) DEBUG in[]     : %s\n", i, in);
+		
 			input |= in[i3] << 24 |
 					in[i3+1] << 16 |
 					in[i3+2] << 8;
+					
+		//printf("DECODEBLOCK(%lu) DEBUG INPUT AFTER     : %x\n", i, input);
 		}
 		
 
 		output  = 0x00000000;
 		
-		
-		
+		/* DEBUG: printf("DECODEBLOCK(%lu) bytes     : %x\n", i, input); */
+		/* DEBUG: printf("DECODEBLOCK(%lu) inXML   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input)); */
 		
 		// XML ENTITY UNALLOWED CHARS
 		// Preliminary transform of \n\r\t to <>& in each encoded byte
@@ -461,7 +469,7 @@ void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 			input &= 0xFFFF00FF; input |= 0x00002600;
 		}
 		
-		
+		/* DEBUG: printf("DECODEBLOCK(%lu) in<>    32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input)); */
 				
 
 		// Case ILLEGAL<>_BOTH I3 DECODE
@@ -538,19 +546,19 @@ void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 
 		} */
 		
-	
+	/* DEBUG: printf("DECODEBLOCK(%lu) output  32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output)); */
 	
 		if(i%2) {
 			out[j+2] |= ((unsigned char) (output >> 28)) & 0x0F;
 			out[j+3]  =  (unsigned char) (output >> 20);
 			out[j+4]  =  (unsigned char) (output >> 12);
-			
+			/* DEBUG: printf("DECODEBLOCK output bytes[0-4]: 0x%x 0x%x 0x%x 0x%x 0x%x (j=%lu[+0 - +4])\n",   out[j], out[j+1], out[j+2], out[j+3], out[j+4], j); */
 			j += 5;
 		} else {
 			out[j]  =  (unsigned char) (output >> 24);
 			out[j+1]  =  (unsigned char) (output >> 16);
 			out[j+2]  =  (unsigned char) (output >> 8);	
-			
+			/* DEBUG: printf("DECODEBLOCK output bytes[0-1]: 0x%x 0x%x\n",   out[j], out[j+1]); */
 		}
 
 		
@@ -560,6 +568,7 @@ void decodeblock( unsigned char *in, unsigned char *out, unsigned long len_in, u
 		*len_out = j;
 		
 }
+
 
 
 /*
@@ -578,14 +587,12 @@ unsigned char* encode_string(
 		unsigned long input_len
 		)
 {
-  printf("hello, world! ENCODE\n");
+	// printf("hello, world! ENCODE\n");
 
 	output_buffer = (unsigned char *) malloc( input_len*6/5 + 12); // Termination sequence. Should be +6 but not future-proof.
 	encodeblock(input_buffer, output_buffer, input_len, &output_len);
-	
-	printf("[C] output len: %lu\n",output_len);
-	
-	return output_buffer; // output_len ? maybe adapt output_buffer...
+		
+	return output_buffer;
 	
 }
 
@@ -598,46 +605,23 @@ unsigned char* encode_string(
 **
 */
 
-
-
-	
 unsigned char* decode_string(
 		unsigned char* input_buffer, 
 		unsigned long input_len
 		)
 {
 
-	
-	output_buffer = (Byte *)malloc( input_len*5/6 + 5 );
+	output_buffer = (unsigned char *) malloc( input_len*5/6 + 5 );
 	decodeblock(input_buffer, output_buffer, input_len, &output_len);
 	
 	
-	return (unsigned char *)output_buffer; // output_len ? maybe adapt output_buffer...
+	return output_buffer;
 	
 }
 
-
-unsigned char* test_string()
-{
-  printf("hello, world! TEST\n");
-
-	output_buffer = (Byte *)malloc( 10 );
-    printf("in func test_string\n");
-	output_buffer[0] = 0x68;
-	output_buffer[1] = 0x65;
-	output_buffer[2] = 0x6C;
-	output_buffer[3] = 0x6C;
-	output_buffer[4] = 0x6F;
-	output_buffer[5] = 0x00;
-	output_buffer[6] = 0x6F;
-	
-	
-	return (unsigned char *)output_buffer;
-	
-}
 
 int get_length() {
 	return output_len;
 }
 
-
+/* Don't forget to export free() too */

@@ -446,7 +446,7 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 					debug_print("Termination sequence now 0x%x 0x%x 0x%x\n", in[i3], in[i3+1], in[i3+2]);
 					len_last = in[i3+1] & 0x07;
 					if(len_last < 1 || len_last > 4) { // Termination sequence after without correct length in it: illegal.
-						debug_print("in[] is %c %c %c %c %c %c %c\n",in[i3],in[i3+1],in[i3+2],in[i3+3],in[i3+4],in[i3+5]);
+						debug_print("in[] is %c %c %c %c %c %c\n",in[i3],in[i3+1],in[i3+2],in[i3+3],in[i3+4],in[i3+5]);
 						debug_print("len_last is %i (0x%x)\n",len_last,len_last);
 						perror( basexml_message( BASEXML_ILLEGAL_TERMINATION ) );
 					} else {
