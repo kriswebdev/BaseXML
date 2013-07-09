@@ -2,117 +2,56 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Emscripten-Generated Code</title>
-    <style>
-      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      textarea.emscripten { font-family: monospace; width: 80%; }
-      div.emscripten { text-align: center; }
-      div.emscripten_border { border: 1px solid black; }
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; }
-    </style>
+    <title>BaseXML for Javascript demo</title>
   </head>
   <body>
-    <hr/>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>  
-    </div>
-    <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    </div>
-    <hr/>
-    <div class="emscripten">
-      <input type="checkbox" id="resize">Resize canvas
-      <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
-      &nbsp;&nbsp;&nbsp;
-      <input type="button" value="Fullscreen" onclick="Module.requestFullScreen(document.getElementById('pointerLock').checked, 
-                                                                                document.getElementById('resize').checked)">
-    </div>
-    
-    <hr/>
-    <textarea class="emscripten" id="output" rows="8"></textarea>
-    <hr>
-		<script>
+  
+	See the console log for output (Ctrl+Maj+K on Firefox, Ctrl+Shift+J on Chrome)
+  
+    <script src='asmjs.js'></script>
+	<script>
 	
-      // connect to canvas
-      var Module = {
-        preRun: [],
-        postRun: [],
-        print: (function() {
-          var element = document.getElementById('output');
-          element.value = ''; // clear browser cache
-          return function(text) {
-            text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
-            element.value += text + "\n";
-            element.scrollTop = 99999; // focus on bottom
-          };
-        })(),
-        printErr: function(text) {
-          text = Array.prototype.slice.call(arguments).join(' ');
-          if (0) { // XXX disabled for safety typeof dump == 'function') {
-            dump(text + '\n'); // fast, straight to the real console
-          } else {
-            console.log(text);
-          }
-        },
-        canvas: document.getElementById('canvas'),
-        setStatus: function(text) {
-          if (Module.setStatus.interval) clearInterval(Module.setStatus.interval);
-          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-          var statusElement = document.getElementById('status');
-          var progressElement = document.getElementById('progress');
-          if (m) {
-            text = m[1];
-            progressElement.value = parseInt(m[2])*100;
-            progressElement.max = parseInt(m[4])*100;
-            progressElement.hidden = false;
-          } else {
-            progressElement.value = null;
-            progressElement.max = null;
-            progressElement.hidden = true;
-          }
-          statusElement.innerHTML = text;
-        },
-        totalDependencies: 0,
-        monitorRunDependencies: function(left) {
-          this.totalDependencies = Math.max(this.totalDependencies, left);
-          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-        }
-      };
-      Module.setStatus('Downloading...');
-	  </script>
-    <script type='text/javascript' src='asmjs.js'></script>
-	<script type='text/javascript' >
-	
-/*
-COMPILE WITH:
-emcc -O2 -s EXPORTED_FUNCTIONS="['_main','_encode_string','_decode_string','_get_length','_free']" -s ASM_JS=1 asmjs-basexml10.c --pre-js src-pre-js.js --post-js src-post-js.js -o asmjs.js
-*/
-	
-function doStartNow() {
+	/*
+	COMPILE WITH:
+	emcc -O2 -s EXPORTED_FUNCTIONS="['_encode_string','_decode_string','_get_length','_free']" -s ASM_JS=1 asmjs-basexml10.c --pre-js src-pre-js.js --post-js src-post-js.js -o asmjs.js
+	*/
 	
 	var demo_str = "hello world!"; // Just for the demo. DON'T use UTF-8 chars because we want "binary array" for the demo
-	console.log('Converting "'+demo_str+'" to typed array for demo');
-	Module.print(['Converting "'+demo_str+'" to typed array for demo']);
+	console.log('Converting "'+demo_str+'" to typed array "demo_tarr" for demo');
+	console.log('In a real situation, you should already have a true typed array as an input (because that\'s one of the only kind of variable type with Blob that can propely handle binary data)');
 	
+	
+	/*
+	
+	// or to read a binary file as a typed array from your server (same-origin restrictions applies), do:
+	
+	var oReq = new XMLHttpRequest();
+	oReq.open("GET", "/myfile.png", true);
+	oReq.responseType = "arraybuffer";
+
+	oReq.onload = function (oEvent) {
+	  var arrayBuffer = oReq.response; // Note: not oReq.responseText
+	  if (arrayBuffer) {
+		var demo_tarr = new Uint8Array(arrayBuffer);
+		// .. encode and decode calls here ...
+	  }
+	};
+
+	oReq.send(null);
+	
+	*/
+
 	var demo_tarr = BaseXML.str2tarr(demo_str); // This is your input raw binary data.
-	console.log('demo_tarr',BaseXML.hex_dump_tarr(demo_tarr));
-	Module.print(['demo_tarr',BaseXML.hex_dump_tarr(demo_tarr)]);
+	console.log('demo_tarr (DEC)',demo_tarr);
+	console.log('demo_tarr (HEX)',BaseXML.hex_dump_tarr(demo_tarr));
 	
 	var encoded=BaseXML.encode( demo_tarr );
-	console.log('encoded',BaseXML.hex_dump_tarr(encoded));
-	Module.print(['encoded',BaseXML.hex_dump_tarr(encoded)]);
+	console.log('encoded (DEC)',encoded);
+	console.log('encoded (HEX)',BaseXML.hex_dump_tarr(encoded));
 	
 	var decoded=BaseXML.decode(  encoded  );
-	console.log('decoded',BaseXML.hex_dump_tarr(decoded));
-	Module.print(['decoded',BaseXML.hex_dump_tarr(decoded)]);
+	console.log('decoded (DEC)',decoded);
+	console.log('decoded (HEX)',BaseXML.hex_dump_tarr(decoded));
 	
 	/* 
 	    If you are processing very LARGE amount of data (> half the size of the free RAM) - during a single call or the total of all calls - , you should:
@@ -120,14 +59,11 @@ function doStartNow() {
 		- Free up the addressable memory after you're TOTALLY DONE with the input and/or ouput data, before making any new call to encode/decode.
 		BaseXML._free(BaseXML.input_ptr);
 		BaseXML._free(BaseXML.output_ptr);
-		  - Any further call to encode/decode will totally mess up the variable.
-		    That's because the encode/decode return variable is a typed array LINKED with the ASM.JS "RAM".
+		  - Any further call to encode/decode will totally mess up the input/output variable content.
+		    That's because the encode/decode return variable is a typed array LINKED with the ASM.JS "RAM"
 		  - Any call to decode() or encode() with a variable that has been free in argument will produce an unexpected results (and you can expect it won't give you any good result).
 	*/
 	
-}
-
-document.body.onload = doStartNow; // avoid print issues
 	
 	
 	</script>

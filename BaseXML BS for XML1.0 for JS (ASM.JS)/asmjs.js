@@ -2710,11 +2710,11 @@ function str2tarr(str) {
 }
 Module['str2tarr'] = str2tarr;
 function hex_dump_tarr(tarr) { // Dump array for debugging
-	var ret="HEX: ";
+	var ret="({";
 	for(var i=0; i<tarr.length; i++) {
-		ret+="["+i+"]="+tarr[i].toString(16)+((i==tarr.length-1)?"":", ");
+		ret+=i+":"+tarr[i].toString(16)+((i==tarr.length-1)?"":", ");
 	}
-	return ret;
+	return ret+"})";
 }
 Module['hex_dump_tarr'] = hex_dump_tarr;
   return Module;

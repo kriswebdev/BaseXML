@@ -1,6 +1,6 @@
 /*********************************************************************\
 
-BaseXML Python module - for XML1.0
+BaseXML Javascript module - for XML1.0
 
 VERSION          :  Version ASMJS-1.0 ALGO-1.0B BINARY SAFE FOR XML 1.0
 
@@ -12,8 +12,24 @@ LINK             :  https://github.com/kriswebdev/BaseXML
 LICENSE          :  Open source under the MIT License.
                      See the LICENCE section below.
 
-USAGE            :  <<T.B.D.>>
-					 This is part of the global ASM.JS code.
+COMPILATION      :  You dont need to compile it yourself, just use the
+                      Javascript pre-built asm.js directly.
+                    If you still want to compile asm.js , you need
+					  Emsripten with all its dependencies
+					  (https://github.com/kripken/emscripten).
+					Then run:
+					  emcc -O2 -s EXPORTED_FUNCTIONS="['_encode_string','_decode_string','_get_length','_free']" -s ASM_JS=1 asmjs-basexml10.c --pre-js src-pre-js.js --post-js src-post-js.js -o asmjs.js
+
+USAGE            :  See the .html file for examples.
+					ASM.JS code is compatible with all main browsers.
+					Firefox will optimize the encoding/decoding process
+					  by running it quite as fast as a C code.
+					<script src='asmjs.js'></script>
+					<script>
+					   var source = ...; // Needs to be a UInt8array, see .html file for examples
+					   var encoded = BaseXML.encode( source );
+					   var decoded = BaseXML.decode( encoded );
+					</script>
 
 DESCRIPTION      :  This software encodes and decodes binary data for
                      use WITHIN AN XML 1.0 document, with a minimum
