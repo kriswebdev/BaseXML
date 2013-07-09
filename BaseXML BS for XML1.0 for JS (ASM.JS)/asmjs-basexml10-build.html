@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <title>BaseXML for Javascript demo</title>
+  </head>
+  <body>
+  
+	See the console log for output (Ctrl+Maj+K on Firefox, Ctrl+Shift+J on Chrome)
+  
+    <script src='asmjs.js'></script>
+	<script>
+	
+	/*
+	COMPILE WITH:
+	emcc -O2 -s EXPORTED_FUNCTIONS="['_encode_string','_decode_string','_get_length','_free']" -s ASM_JS=1 asmjs-basexml10.c --pre-js src-pre-js.js --post-js src-post-js.js -o asmjs.js
+	*/
+	
+	var demo_str = "hello world!"; // Just for the demo. DON'T use UTF-8 chars because we want "binary array" for the demo
+	console.log('Converting "'+demo_str+'" to typed array "demo_tarr" for demo');
+	console.log('In a real situation, you should already have a true typed array as an input (because that\'s one of the only kind of variable type with Blob that can propely handle binary data)');
+	
+	
+	/*
+	
+	// or to read a binary file as a typed array from your server (same-origin restrictions applies), do:
+	
+	var oReq = new XMLHttpRequest();
+	oReq.open("GET", "/myfile.png", true);
+	oReq.responseType = "arraybuffer";
+
+	oReq.onload = function (oEvent) {
+	  var arrayBuffer = oReq.response; // Note: not oReq.responseText
+	  if (arrayBuffer) {
+		var demo_tarr = new Uint8Array(arrayBuffer);
+		// .. encode and decode calls here ...
+	  }
+	};
+
+	oReq.send(null);
+	
+	*/
+
+	var demo_tarr = BaseXML.str2tarr(demo_str); // This is your input raw binary data.
+	console.log('demo_tarr (DEC)',demo_tarr);
+	console.log('demo_tarr (HEX)',BaseXML.hex_dump_tarr(demo_tarr));
+	
+	var encoded=BaseXML.encode( demo_tarr );
+	console.log('encoded (DEC)',encoded);
+	console.log('encoded (HEX)',BaseXML.hex_dump_tarr(encoded));
+	
+	var decoded=BaseXML.decode(  encoded  );
+	console.log('decoded (DEC)',decoded);
+	console.log('decoded (HEX)',BaseXML.hex_dump_tarr(decoded));
+	
+	/* 
+	    If you are processing very LARGE amount of data (> half the size of the free RAM) - during a single call or the total of all calls - , you should:
+		- Divide your work in chunks of 5*N bytes for encode and 6*N bytes for decode.
+		- Free up the addressable memory after you're TOTALLY DONE with the input and/or ouput data, before making any new call to encode/decode.
+		BaseXML._free(BaseXML.input_ptr);
+		BaseXML._free(BaseXML.output_ptr);
+		  - Any further call to encode/decode will totally mess up the input/output variable content.
+		    That's because the encode/decode return variable is a typed array LINKED with the ASM.JS "RAM"
+		  - Any call to decode() or encode() with a variable that has been free in argument will produce an unexpected results (and you can expect it won't give you any good result).
+	*/
+	
+	
+	
+	</script>
+  </body>
+</html>

@@ -1,8 +1,8 @@
 /*********************************************************************\
 
-BaseXML Python module - for XML1.0
+BaseXML Javascript module - for XML1.0
 
-VERSION          :  V1.0.B BINARY SAFE FOR XML 1.0
+VERSION          :  Version ASMJS-1.0 ALGO-1.0B BINARY SAFE FOR XML 1.0
 
 AUTHOR           :  KrisWebDev
 
@@ -12,9 +12,24 @@ LINK             :  https://github.com/kriswebdev/BaseXML
 LICENSE          :  Open source under the MIT License.
                      See the LICENCE section below.
 
-USAGE            :  Compile and run as a command line to see the help.
-					 To compile: gcc -O3 basexml11.c -o basexml11.exe
-					 Download MinGW to compile on Windows.
+COMPILATION      :  You dont need to compile it yourself, just use the
+                      Javascript pre-built asm.js directly.
+                    If you still want to compile asm.js , you need
+					  Emsripten with all its dependencies
+					  (https://github.com/kripken/emscripten).
+					Then run:
+					  emcc -O2 -s EXPORTED_FUNCTIONS="['_encode_string','_decode_string','_get_length','_free']" -s ASM_JS=1 asmjs-basexml10.c --pre-js src-pre-js.js --post-js src-post-js.js -o asmjs.js
+
+USAGE            :  See the .html file for examples.
+					ASM.JS code is compatible with all main browsers.
+					Firefox will optimize the encoding/decoding process
+					  by running it quite as fast as a C code.
+					<script src='asmjs.js'></script>
+					<script>
+					   var source = ...; // Needs to be a UInt8array, see .html file for examples
+					   var encoded = BaseXML.encode( source );
+					   var decoded = BaseXML.decode( encoded );
+					</script>
 
 DESCRIPTION      :  This software encodes and decodes binary data for
                      use WITHIN AN XML 1.0 document, with a minimum
@@ -105,8 +120,6 @@ Except as contained in this notice, the name(s) of the above copyright
 #include <stdlib.h>
 #include <math.h>
 
-#include <fcntl.h>
-#include <Python.h>
 
 #ifdef _MSC_VER
 typedef __int32 int32_t;
@@ -116,10 +129,6 @@ typedef unsigned __int64 uint64_t;
 #else
 #include <stdint.h>
 #endif
-
-#define DEBUG        0
-#define debug_print(...) \
-            do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
 
 			
 /*
@@ -199,7 +208,7 @@ const char *basexml_msgs[ BASEXML_MAX_MESSAGES ] = {
   (byte & 0x01 ? 1 : 0) 
 
 /*
-debug_print ("Debug info "BYTETOBINARYPATTERN"\n", BYTETOBINARY(!(in[0] & 0xf0)));
+
 */
 /* /DEBUG INFORMATION */
 
@@ -210,25 +219,6 @@ typedef unsigned long uLong;
 typedef unsigned int uInt;
 typedef unsigned char Byte;
 typedef int Bool;
-
-
-/* Function declarations */
-PyObject* encode_file(PyObject*, PyObject*, PyObject*);
-PyObject* decode_file(PyObject*, PyObject*, PyObject*);
-PyObject* encode_string(PyObject* ,PyObject* ,PyObject*);
-PyObject* decode_string(PyObject* ,PyObject* , PyObject*);
-PyObject* decode_string(PyObject* ,PyObject* ,PyObject* );
-
-/* Python API requirements */
-static char encode_doc[] = "encode(input_file, output_file, <size>)";
-static char decode_doc[] = "decode(input_file, output_file, <size>)";
-static char encode_string_doc[] = "encode_string(string, crc32, column)";
-static char decode_string_doc[] = "decode_string(string, crc32, escape)";
-static PyMethodDef funcs[] = {
-        {"encode_string", (PyCFunction) encode_string, METH_KEYWORDS | METH_VARARGS, encode_string_doc},
-        {"decode_string", (PyCFunction) decode_string, METH_KEYWORDS | METH_VARARGS, decode_string_doc},
-        {NULL, NULL, 0, NULL}
-};
 
 /* "Global" variables */
 uint32_t input = 0x00000000;
@@ -246,7 +236,7 @@ static void encodeblock( unsigned char *in, unsigned char *out, unsigned long le
 	int len_rest;
 
 
-	debug_print ("Encoding len_in=%i bytes, i_ceil=%i\n", len_in, i_ceil);
+	/* DEBUG: printf("Encoding len_in=%lu bytes, i_ceil=%lu\n", len_in, i_ceil); */
 
 
 	
@@ -254,9 +244,9 @@ static void encodeblock( unsigned char *in, unsigned char *out, unsigned long le
 	
 	for( i = 0, i5 = 0, j = 0; i < i_ceil ; i++ ) {
 		
-		debug_print ("ENCODEBLOCK loop i=%i (i_ceil=%i)\n", i, i_ceil);
+		/* DEBUG: printf("ENCODEBLOCK loop i=%lu (i_ceil=%lu)\n", i, i_ceil); */
 
-		debug_print ("ENCODEBLOCK 5 input bytes[0-4]: 0x%x 0x%x 0x%x 0x%x 0x%x\n", in[0], in[1], in[2], in[3], in[4]);
+		/* DEBUG: printf("ENCODEBLOCK 5 input bytes[0-4] for 2 loops: 0x%x 0x%x 0x%x 0x%x 0x%x\n", in[i5+0], in[i5+1], in[i5+2], in[i5+3], in[i5+4]); */
 		
 		if(i+1 == i_ceil) { // don't encode inexisting bytes
 			input = 0x00000000;
@@ -361,8 +351,8 @@ static void encodeblock( unsigned char *in, unsigned char *out, unsigned long le
 		}
 			
 
-		debug_print ("ENCODEBLOCK(%i) input   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input));
-		debug_print ("ENCODEBLOCK(%i) out<>   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output));
+		/* DEBUG: printf("ENCODEBLOCK(%lu) input   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input)); */
+		/* DEBUG: printf("ENCODEBLOCK(%lu) out<>   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output)); */
 				
 		// XML ENTITY UNALLOWED CHARS
 		/*
@@ -379,14 +369,14 @@ static void encodeblock( unsigned char *in, unsigned char *out, unsigned long le
 			output &= 0xFFFF00FF; output |= 0x00000900;
 		}
 		
-		debug_print ("ENCODEBLOCK(%i) outXML  32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output));
+		/* DEBUG: printf("ENCODEBLOCK(%lu) outXML  32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output)); */
 		
 
 		out[j] = (unsigned char) (output >> 24);
 		out[j+1] = (unsigned char) (output >> 16);
 		out[j+2] = (unsigned char) (output >> 8);	
 
-		debug_print ("ENCODEBLOCK output bytes[0-2]: 0x%x 0x%x 0x%x (j=%i,+1,+1)\n\n", out[j], out[j+1], out[j+2], j);
+		/* DEBUG: printf("ENCODEBLOCK output bytes[0-2]: 0x%x 0x%x 0x%x (j=%lu,+1,+1)\n\n", out[j], out[j+1], out[j+2], j); */
 		
 		j+=3;
 					
@@ -402,7 +392,7 @@ static void encodeblock( unsigned char *in, unsigned char *out, unsigned long le
 		out[j] = 0x3f;
 		out[j+1] = 0x30 | ((len_rest) & 0x0f); // code the length of the last unencoded 5-bytes sequence inside the termination sequence
 		out[j+2] = 0x3f;
-		debug_print ("ENCODEBLOCK Termination sequence: 0x%x 0x%x 0x%x\n\n", out[j], out[j+1], out[j+2]);
+		/* DEBUG: printf("ENCODEBLOCK Termination sequence: 0x%x 0x%x 0x%x\n\n", out[j], out[j+1], out[j+2]); */
 		j+=3;
 	}
 	
@@ -431,11 +421,11 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 	
 	*len_out = 0;
 
-	debug_print ("Decoding %i bytes...\n",len_in);
+	/* DEBUG: printf("Decoding %lu bytes...\n",len_in); */
 	
 	for( i = 0, i3 = 0; i < i_ceil ; i++, i3 += 3 ) {
 
-		debug_print ("DECODEBLOCK loop i=%i, i3=%i (i_ceil=%i)\n", i, i3, i_ceil);
+		/* DEBUG: printf("DECODEBLOCK loop i=%lu, i3=%lu (i_ceil=%lu)\n", i, i3, i_ceil); */
 				
 		input = 0;
 		if(i+1 == i_ceil || i+2 == i_ceil) {
@@ -443,35 +433,43 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 			 // Termination sequence
 			if( i3+2 < len_in ) {
 				if( (in[i3] == 0x3f) && (in[i3+2] == 0x3f) ) {
-					debug_print("Termination sequence now 0x%x 0x%x 0x%x\n", in[i3], in[i3+1], in[i3+2]);
+					/* DEBUG: printf("Termination sequence now 0x%x 0x%x 0x%x\n", in[i3], in[i3+1], in[i3+2]); */
 					len_last = in[i3+1] & 0x07;
 					if(len_last < 1 || len_last > 4) { // Termination sequence after without correct length in it: illegal.
-						debug_print("in[] is %c %c %c %c %c %c\n",in[i3],in[i3+1],in[i3+2],in[i3+3],in[i3+4],in[i3+5]);
-						debug_print("len_last is %i (0x%x)\n",len_last,len_last);
+						/* DEBUG: printf("in[] is %c %c %c %c %c %c\n",in[i3],in[i3+1],in[i3+2],in[i3+3],in[i3+4],in[i3+5]); */
+						/* DEBUG: printf("len_last is %lu\n",len_last); */
 						perror( basexml_message( BASEXML_ILLEGAL_TERMINATION ) );
 					} else {
 						*len_out = j + len_last - (1-(i%2))*5;
-						debug_print("\n\n*!! LEN_OUT = j (%i) + len_last - (1-(%i))*5 = %i\n",j,len_last,i%2,*len_out);
+						/* DEBUG: printf("\n\n*!! LEN_OUT = j (%lu) + len_last (%lu) - (1-(%lu))*5 = %lu\n",j,len_last,i%2,*len_out); */
 					}
 					break;
-				} else debug_print("DECODEBLOCK(%i) Not a termination sequence\n",i);
-			} else debug_print("DECODEBLOCK(%i) i3+2 < len_in",i);
+				} /*else  DEBUG: printf("DECODEBLOCK(%lu) Not a termination sequence\n",i); */
+			} /*else  DEBUG */ printf("DECODEBLOCK(%lu) i3+2 < len_in",i);
 			
 			 // Full sequence
 			if(i3<len_in)   input |= in[i3]   << 24;
 			if(i3+1<len_in) input |= in[i3+1] << 16;
 			if(i3+1<len_in) input |= in[i3+2] <<  8;
 		} else {
+		//printf("DECODEBLOCK(%lu) DEBUG INPUT BEFORE     : %x\n", i, input);
+		//printf("DECODEBLOCK(%lu) DEBUG i3     : %lu\n", i, i3);
+		//printf("DECODEBLOCK(%lu) DEBUG in[i3] in[i3+1] in[i3+2]     : %x %x %x\n", i, in[i3], in[i3+1], in[i3+2]);
+		//printf("DECODEBLOCK(%lu) DEBUG NEXT WOULD BE in[i3+3] in[i3+4] in[i3+5]     : %x %x %x\n", i, in[i3+3], in[i3+4], in[i3+5]);
+		//printf("DECODEBLOCK(%lu) DEBUG in[]     : %s\n", i, in);
+		
 			input |= in[i3] << 24 |
 					in[i3+1] << 16 |
 					in[i3+2] << 8;
+					
+		//printf("DECODEBLOCK(%lu) DEBUG INPUT AFTER     : %x\n", i, input);
 		}
 		
 
 		output  = 0x00000000;
 		
-		debug_print ("DECODEBLOCK(%i) bytes     : %x\n", i, input);
-		debug_print ("DECODEBLOCK(%i) inXML   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input));
+		/* DEBUG: printf("DECODEBLOCK(%lu) bytes     : %x\n", i, input); */
+		/* DEBUG: printf("DECODEBLOCK(%lu) inXML   32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input)); */
 		
 		// XML ENTITY UNALLOWED CHARS
 		// Preliminary transform of \n\r\t to <>& in each encoded byte
@@ -487,7 +485,7 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 			input &= 0xFFFF00FF; input |= 0x00002600;
 		}
 		
-		debug_print ("DECODEBLOCK(%i) in<>    32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input));
+		/* DEBUG: printf("DECODEBLOCK(%lu) in<>    32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(input)); */
 				
 
 		// Case ILLEGAL<>_BOTH I3 DECODE
@@ -564,19 +562,19 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 
 		} */
 		
-	debug_print ("DECODEBLOCK(%i) output  32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output));
+	/* DEBUG: printf("DECODEBLOCK(%lu) output  32: "BYTETOBINARYPATTERN"\n", i, BYTETOBINARY(output)); */
 	
 		if(i%2) {
 			out[j+2] |= ((unsigned char) (output >> 28)) & 0x0F;
 			out[j+3]  =  (unsigned char) (output >> 20);
 			out[j+4]  =  (unsigned char) (output >> 12);
-			debug_print ("DECODEBLOCK output bytes[0-4]: 0x%x 0x%x 0x%x 0x%x 0x%x (j=%i[+0 - +4])\n",   out[j], out[j+1], out[j+2], out[j+3], out[j+4], j);
+			/* DEBUG: printf("DECODEBLOCK output bytes[0-4]: 0x%x 0x%x 0x%x 0x%x 0x%x (j=%lu[+0 - +4])\n",   out[j], out[j+1], out[j+2], out[j+3], out[j+4], j); */
 			j += 5;
 		} else {
 			out[j]  =  (unsigned char) (output >> 24);
 			out[j+1]  =  (unsigned char) (output >> 16);
 			out[j+2]  =  (unsigned char) (output >> 8);	
-			debug_print ("DECODEBLOCK output bytes[0-1]: 0x%x 0x%x\n",   out[j], out[j+1]);
+			/* DEBUG: printf("DECODEBLOCK output bytes[0-1]: 0x%x 0x%x\n",   out[j], out[j+1]); */
 		}
 
 		
@@ -589,7 +587,6 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 
 
 
-
 /*
 ** encode_string
 **
@@ -597,43 +594,24 @@ static void decodeblock( unsigned char *in, unsigned char *out, unsigned long le
 **
 */
 
-PyObject* encode_string(
-		PyObject* self, 
-		PyObject* args, 
-		PyObject* kwds
+unsigned char* output_buffer;
+unsigned long output_len = 0;
+
+// output_len ?
+unsigned char* encode_string(
+		unsigned char* input_buffer, 
+		unsigned long input_len
 		)
 {
-	PyObject *Py_input_string;
-	PyObject *Py_output_string;
-	PyObject *retval;
-	
-	Byte *input_buffer = NULL;
-	Byte *output_buffer = NULL;
-	uInt input_len = 0;
-	uInt output_len = 0;
-	
-	static char *kwlist[] = { "string", NULL };
-	if(!PyArg_ParseTupleAndKeywords(args, 
-				kwds,
-				"O!|Li", 
-				kwlist,
-				&PyString_Type,
-				&Py_input_string
-				)) 
-		return NULL;
+	// printf("hello, world! ENCODE\n");
 
-	input_len = PyString_Size(Py_input_string);
-	input_buffer = (Byte *) PyString_AsString(Py_input_string);
-	output_buffer = (Byte *) malloc( input_len*6/5 + 12); // Termination sequence. Should be +6 but not future-proof.
+	output_buffer = (unsigned char *) malloc( input_len*6/5 + 12); // Termination sequence. Should be +6 but not future-proof.
 	encodeblock(input_buffer, output_buffer, input_len, &output_len);
-	Py_output_string = PyString_FromStringAndSize((char *)output_buffer, output_len);
-	retval = Py_BuildValue("S", Py_output_string);
-
-	free(output_buffer);
-	Py_DECREF(Py_output_string);
+		
+	return output_buffer;
 	
-	return retval;
 }
+
 
 
 /*
@@ -643,50 +621,23 @@ PyObject* encode_string(
 **
 */
 
-
-PyObject* decode_string(
-		PyObject* self, 
-		PyObject* args, 
-		PyObject* kwds
+unsigned char* decode_string(
+		unsigned char* input_buffer, 
+		unsigned long input_len
 		)
 {
-	PyObject *Py_input_string;
-	PyObject *Py_output_string;
-	PyObject *retval;
-	
-	Byte *input_buffer = NULL;
-	Byte *output_buffer = NULL;
-	uInt input_len = 0;
-	uInt output_len = 0;
-	
-	static char *kwlist[] = { "string", NULL };
-	if(!PyArg_ParseTupleAndKeywords(args, 
-				kwds,
-				"O!|Li", 
-				kwlist,
-				&PyString_Type,
-				&Py_input_string
-				)) 
-		return NULL;
 
-	input_len = PyString_Size(Py_input_string);
-	input_buffer = (Byte *)PyString_AsString(Py_input_string);
-	output_buffer = (Byte *)malloc( input_len*5/6 + 5 );
+	output_buffer = (unsigned char *) malloc( input_len*5/6 + 5 );
 	decodeblock(input_buffer, output_buffer, input_len, &output_len);
-	Py_output_string = PyString_FromStringAndSize((char *)output_buffer, output_len);
-	retval = Py_BuildValue("S", Py_output_string);
 	
-	free(output_buffer);
-	Py_DECREF(Py_output_string);
-
-	return retval;
+	
+	return output_buffer;
+	
 }
 
-/*
-** Initializer
-*/
 
-void initbasexml()
-{
-	Py_InitModule3("basexml", funcs, "Raw basexml operations");
+int get_length() {
+	return output_len;
 }
+
+/* Don't forget to export free() too */
