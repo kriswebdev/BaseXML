@@ -2,7 +2,7 @@
 
 BaseXML - for XML1.0
 
-VERSION          :  V1.0c BINARY SAFE FOR XML 1.0
+VERSION          :  V1.0d BINARY SAFE FOR XML 1.0
 
 AUTHOR           :  KrisWebDev
 
@@ -102,7 +102,7 @@ Except as contained in this notice, the name(s) of the above copyright
 #include <stdlib.h>
 #include <stdint.h>
 
-#define DEBUG        0
+#define DEBUG        1
 #define debug_print(...) \
             do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
 
@@ -332,8 +332,6 @@ static void encodeblock( unsigned char *in, unsigned char *out, int len ) // enc
 					
 	} while (++i != 2);
 
-	debug_print ("ENCODEBLOCK output bytes[0-6]: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n\n", out[0], out[1], out[2], out[3], out[4], out[5]);
-
 	// SHORT TERMINATION SEQUENCE
 	// we  reduce output size by coding into out[3-4] if len <= 2
 	if(len != 5) { // add a termination sequence
@@ -347,6 +345,8 @@ static void encodeblock( unsigned char *in, unsigned char *out, int len ) // enc
 			out[5] = 0x3f;
 		}
 	}
+	
+	debug_print ("ENCODEBLOCK output bytes[0-5] (exc. 6-8): 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n\n", out[0], out[1], out[2], out[3], out[4], out[5]);
 	
 	/*
 	debug_print ("\nENCODEBLOCK out[0]  8 : "BYTETOBINARYPATTERN"\n", BYTETOBINARY(out[0]));
