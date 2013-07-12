@@ -15,7 +15,7 @@ BaseXML doesn't include a decoding checksum but you could easily use one if you 
 Requirements
 ------------
 
-Your XML 1.0 (or above) document must use the default UTF-8 encoding, which is the default encoding, i.e.:
+Your XML 1.0 (or above) document must use the default UTF-8 encoding, i.e.:
 
         <?xml version="1.0" encoding="UTF-8" ?>
 
@@ -34,6 +34,9 @@ Implementations
   </tr>
   <tr>
     <td><b>BaseXML BS for XML1.0 for Python</b></td><td>For Python scripts</td><td>PYTHON STRINGS</td><td>Python module written in C</td>
+  </tr>
+  <tr>
+    <td><b>BaseXML BS for XML1.0 for Javascript</b></td><td>For Javascript scripts</td><td>JAVASCRIPT TYPED ARRAYS STRINGS</td><td>Javascript module written in C, compiled to Javascript through Emsripten with ASM.JS</td>
   </tr>
 </table>
 
@@ -66,6 +69,18 @@ Installation
     str&nbsp;=&nbsp;"hello world"<br>
     enc&nbsp;=&nbsp;basexml.encode_string(str)<br>
     dec&nbsp;=&nbsp;basexml.decode_string(enc)</td>
+  </tr>
+  <tr>
+    <td><b>BaseXML BS for XML1.0 for Javascript</b></td>
+    <td>You just need asmjs.js. You don't need to compile it.</td>
+    <td>
+    From an HTML document:<br>
+    &lt;script&nbsp;src='asmjs.js'&gt;&lt;/script&gt;<br>
+    &lt;script&gt;<br>
+        source&nbsp;=&nbsp;...;&nbsp;//&nbsp;Needs to be a UInt8array, see .html file for examples<br>
+        encoded&nbsp;=&nbsp;BaseXML.encode(&nbsp;source&nbsp;);<br>
+        decoded&nbsp;=&nbsp;BaseXML.decode(&nbsp;encoded&nbsp;);<br>
+    &lt;/script&gt;
   </tr>
 </table>
 
