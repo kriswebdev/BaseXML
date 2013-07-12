@@ -19,7 +19,7 @@ Your XML 1.0 (or above) document must use the default UTF-8 encoding, i.e.:
 
         <?xml version="1.0" encoding="UTF-8" ?>
 
-Your XML parser must respect the XML 1.0 norm, i.e. it must support of the set of UTF-8 characters defined in the norm and not remove characters like tabs or spaces. Python SAX and EXPAT are compliant.
+Your XML parser must respect the XML 1.0 norm, i.e. it must support the set of UTF-8 characters defined in the norm and not remove characters like tabs or spaces. Python SAX and EXPAT are compliant.
 
 
 Implementations
