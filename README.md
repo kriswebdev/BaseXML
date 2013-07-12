@@ -25,6 +25,8 @@ Your XML parser must respect the XML 1.0 norm, i.e. it must support the set of U
 Implementations
 ---------------
 
+BaseXML implementations are based on C to offer exceptional encoding/decoding speeds.
+
 <table>
   <tr>
     <th>Implementation name</th><th>Usage</th><th>Supported input/output modes</th><th>Behind-the-scene Technology</th>
@@ -36,7 +38,7 @@ Implementations
     <td><b>BaseXML BS for XML1.0 for Python</b></td><td>For Python scripts</td><td>PYTHON STRINGS</td><td>Python module written in C</td>
   </tr>
   <tr>
-    <td><b>BaseXML BS for XML1.0 for Javascript</b></td><td>For Javascript scripts</td><td>JAVASCRIPT TYPED ARRAYS STRINGS</td><td>Javascript module written in C, compiled to Javascript through Emsripten with ASM.JS</td>
+    <td><b>BaseXML BS for XML1.0 for Javascript</b></td><td>For Javascript scripts</td><td>JAVASCRIPT <i>TYPED</i> ARRAYS.<br>Get it from <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#responseType">XMLHttpRequest</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader#readAsArrayBuffer%28%29">Form File</a> or <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement#Methods">Canvas Image</a> (from converted Blob or FileReader in the latter case).</td><td>Javascript module written in C, compiled to Javascript through Emsripten with ASM.JS</td>
   </tr>
 </table>
 
