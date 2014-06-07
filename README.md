@@ -1,7 +1,7 @@
 BaseXML - for XML1.0+
 =====================
 
-What does it do?
+Prupose
 ----------------
 
 BaseXML encodes and decodes BINARY DATA for use WITHIN AN XML 1.0 (or above) document.
